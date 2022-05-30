@@ -112,7 +112,7 @@ void game::Player::handle_right_joystick(const SDL_Event& event)
 	_right_joystick = glm::vec2{_right_joystick_x, _right_joystick_y};
 
 	if (glm::abs(_right_joystick.x) > deadzone || glm::abs(_right_joystick.y) > deadzone) {
-		game::camera::move_center_position(_right_joystick);
+		game::camera::begin_move(_right_joystick);
 	}
 }
 

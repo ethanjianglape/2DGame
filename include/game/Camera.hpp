@@ -6,7 +6,8 @@
 
 namespace game::camera {
 	void init();
-	void move_center_position(const glm::vec2& direction);
+	void begin_move(const glm::vec2& direction);
+	void end_move();
 	void center_on_position(const glm::vec2& position);
 	void follow_position(const glm::vec2& world_position);
 	void update();
@@ -16,6 +17,4 @@ namespace game::camera {
 	glm::vec2 get_world_center_position();
 
 	glm::vec2 get_render_offset();
-	const glm::vec2& get_position();
-	const glm::vec2& get_size();
 }
