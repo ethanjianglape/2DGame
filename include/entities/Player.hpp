@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <chrono>
+
 #include <entities/entity.hpp>
 #include <interfaces/IControlable.hpp>
 
@@ -11,17 +14,32 @@ namespace game {
 
 		glm::vec2 _world_position;
 		glm::vec2 _direction;
+		glm::vec2 _new_direction;
+		glm::vec2 _previous_direction;
+
+		std::vector<glm::vec2> _previous_directions;
+
+		std::chrono::high_resolution_clock::time_point _last_directions_clear;
+
+		bool _left_joystick_x_set;
+		bool _left_joystick_y_set;
+		bool _changing_direction;
+		bool _deccelerating;
+		bool _accelerating;
 
 		float _left_joystick_x;
 		float _left_joystick_y;
 		float _right_joystick_x;
 		float _right_joystick_y;
+		float _angle;
 
 		float _speed;
 		float _walking_speed;
 		float _running_speed;
 		float _acceleration;
 		float _decceleration;
+		float _direction_acceleration;
+		float _direction_decceleration;
 
 		bool _running;
 		bool _moving;

@@ -29,7 +29,7 @@ namespace game::window {
 	void draw_vector(const glm::vec2& origin, const float magnitude);
 	void draw_circle(const glm::vec2& origin, const float radius);
 	void draw_texture(const glm::vec2& position, const glm::vec2& size, std::shared_ptr<game::Texture> texture);
-	void draw_texture(const glm::vec2& origin, const float width, const float height, std::shared_ptr<game::Texture> texture);
+	void draw_texture(const glm::vec2& origin, const float width, const float height, const double angle, std::shared_ptr<game::Texture> texture);
 	void draw_texture(const SDL_Rect* position, std::shared_ptr<game::Texture> texture);
 	void draw_texture(const SDL_FRect* position, std::shared_ptr<game::Texture> texture);
 	void finish_drawing();

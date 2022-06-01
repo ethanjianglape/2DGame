@@ -144,7 +144,7 @@ void game::BouncingBall::update()
 
 void game::BouncingBall::draw() const noexcept
 {
-	game::window::draw_texture(_origin, _width, _height, _texture);
+	game::window::draw_texture(_origin, _width, _height, 0, _texture);
 
 	const auto hitbox = get_hitbox();
 

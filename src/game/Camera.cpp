@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <game/Camera.hpp>
 #include <window/window.hpp>
 
@@ -14,9 +16,14 @@ namespace game::camera {
 	glm::vec2 _offset_direction;
 
 	float _offset_speed;
+	float _offset_return_speed;
 	float _offset_max;
 
 	bool _off_center;
+	bool _moving;
+	bool _returning;
+
+	const float get_offset_speed();
 }
 
 void game::camera::init()
@@ -24,8 +31,11 @@ void game::camera::init()
 	const auto window_size = game::window::get_renderer_size();
 
 	_off_center = false;
+	_moving = false;
+	_returning = false;
 
-	_offset_speed = 100.0f;
+	_offset_speed = 200.0f;
+	_offset_return_speed = 400.0f;
 	_offset_max = 50.0f;
 
 	_offset = glm::vec2{0, 0};
@@ -39,11 +49,37 @@ void game::camera::init()
 void game::camera::begin_move(const glm::vec2& direction)
 {
 	_offset_direction = direction;
+	_moving = true;
 }
 
 void game::camera::end_move()
 {
+	_moving = false;
+}
 
+void game::camera::move_offset_in_direction(const glm::vec2& direction)
+{
+	_offset_direction = direction;
+	_moving = true;
+	_returning = false;
+}
+
+void game::camera::move_offset_to_center()
+{
+	if (!_off_center) {
+		return;
+	}
+
+	const auto from = get_offset_world_position();
+	const auto to = get_center_world_position();
+	const auto diff = to - from;
+	const auto length = glm::length(diff);
+
+	if (length > 0) {
+		_offset_direction = diff / length;
+		_moving = false;
+		_returning = true;
+	}
 }
 
 void game::camera::center_on_position(const glm::vec2& position)
@@ -52,30 +88,33 @@ void game::camera::center_on_position(const glm::vec2& position)
 	_position_inverse = _position * -1.0f;
 }
 
-void game::camera::follow_position(const glm::vec2& world_position)
+void game::camera::follow_position(const glm::vec2& position)
 {
 	static constexpr auto lerp = 5.0f;
 
-	const auto center = get_world_center_position();
-	const auto v = (world_position - center) * lerp * game::window::get_delta_time();
+	const auto center = get_center_world_position();
+	const auto v = (position - center) * lerp * game::window::get_delta_time();
 
 	_velocity = v;
 }
 
+const float game::camera::get_offset_speed()
+{
+	if (_returning) {
+		return _offset_return_speed;
+	}
+
+	return _offset_speed;
+}
+
 void game::camera::update()
 {
+	if (_moving) {
+		_velocity = _offset_direction * _offset_speed * game::window::get_delta_time();
+	}
+
 	_position += _velocity;
 	_position_inverse = _position * -1.0f;
-
-	const auto temp_offset = _offset + (_offset_direction * _offset_speed * game::window::get_delta_time());
-
-	if (glm::length(temp_offset) < _offset_max) {
-		_offset = temp_offset;
-	}
-
-	if (glm::length(_offset) > 0) {
-		_off_center = true;
-	}
 }
 
 void game::camera::draw()
@@ -93,15 +132,20 @@ void game::camera::draw()
 
 glm::vec2 game::camera::get_relative_position(const glm::vec2& entity_position)
 {
-	return entity_position + _position_inverse - _offset;
+	return entity_position + _position_inverse;
 }
 
-glm::vec2 game::camera::get_world_center_position()
+glm::vec2 game::camera::get_center_world_position()
 {
 	return glm::vec2{_position.x + (_size.x / 2), _position.y + (_size.y / 2)};
 }
 
+glm::vec2 game::camera::get_offset_world_position()
+{
+	return get_center_world_position();
+}
+
 glm::vec2 game::camera::get_render_offset()
 {
-	return _position_inverse - _offset;
+	return _position_inverse;
 }

@@ -222,11 +222,13 @@ void game::window::draw_texture(const glm::vec2& position, const glm::vec2& size
 	SDL_RenderCopyF(_renderer, texture->get_texture(), nullptr, &rect);
 }
 
-void game::window::draw_texture(const glm::vec2& origin, const float width, const float height, std::shared_ptr<game::Texture> texture)
+void game::window::draw_texture(const glm::vec2& origin, const float width, const float height, const double angle, std::shared_ptr<game::Texture> texture)
 {
 	const auto rect = SDL_FRect{origin.x, origin.y, width, height};
 
-	SDL_RenderCopyF(_renderer, texture->get_texture(), nullptr, &rect);
+	//SDL_RenderCopyF(_renderer, texture->get_texture(), nullptr, &rect);
+
+	SDL_RenderCopyExF(_renderer, texture->get_texture(), nullptr, &rect, angle, nullptr, SDL_FLIP_NONE);
 }
 
 void game::window::draw_texture(const SDL_Rect* position, std::shared_ptr<game::Texture> texture)
