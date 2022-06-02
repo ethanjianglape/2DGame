@@ -7,6 +7,16 @@
 #include <interfaces/IControlable.hpp>
 
 namespace game {
+	enum class PlayerState {
+		Idle = 0,
+		Moving = 1
+	};
+
+	enum class MovementState {
+		Walking = 0,
+		Running = 1,
+	};
+
 	class Player : Entity, IControlable {
 	private:
 		void handle_key_up(const SDL_Event& event);
@@ -17,20 +27,18 @@ namespace game {
 		glm::vec2 _new_direction;
 		glm::vec2 _previous_direction;
 
-		std::vector<glm::vec2> _previous_directions;
+		//std::vector<glm::vec2> _previous_directions;
 
-		std::chrono::high_resolution_clock::time_point _last_directions_clear;
+		//std::chrono::high_resolution_clock::time_point _last_directions_clear;
 
-		bool _left_joystick_x_set;
-		bool _left_joystick_y_set;
 		bool _changing_direction;
 		bool _deccelerating;
 		bool _accelerating;
 
-		float _left_joystick_x;
-		float _left_joystick_y;
-		float _right_joystick_x;
-		float _right_joystick_y;
+		//float _left_joystick_x;
+		//float _left_joystick_y;
+		//float _right_joystick_x;
+		//float _right_joystick_y;
 		float _angle;
 
 		float _speed;
@@ -41,8 +49,8 @@ namespace game {
 		float _direction_acceleration;
 		float _direction_decceleration;
 
-		bool _running;
-		bool _moving;
+		PlayerState _state;
+		MovementState _movement_state;
 
 		glm::vec2 _left_joystick;
 		glm::vec2 _right_joystick;

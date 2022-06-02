@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include sub-projects.
 add_subdirectory("src")
 
-add_executable(Game "src/main.cpp" "src/window/window.cpp" "src/surface/surface.cpp" "include/game/game.hpp" "src/game/game.cpp" "include/texture/texture.hpp" "src/texture/texture.cpp" "src/entities/BouncingBall.cpp" "include/entities/entity.hpp"  "include/interfaces/IDrawable.hpp" "include/interfaces/IUpdatable.hpp" "include/entities/BouncingBall.hpp" "include/interfaces/IControlable.hpp" "src/entities/Player.cpp" "include/entities/Player.hpp" "GameState.hpp" "include/game/Level.hpp" "include/game/Tile.hpp" "src/game/Tile.cpp" "src/game/Level.cpp" "include/game/Camera.hpp" "src/game/Camera.cpp" )
+add_executable(Game "src/main.cpp" "src/window/window.cpp" "src/surface/surface.cpp" "include/game/game.hpp" "src/game/game.cpp" "include/texture/texture.hpp" "src/texture/texture.cpp" "src/entities/BouncingBall.cpp" "include/entities/entity.hpp"  "include/interfaces/IDrawable.hpp" "include/interfaces/IUpdatable.hpp" "include/entities/BouncingBall.hpp" "include/interfaces/IControlable.hpp" "src/entities/Player.cpp" "include/entities/Player.hpp" "GameState.hpp" "include/game/Level.hpp" "include/game/Tile.hpp" "src/game/Tile.cpp" "src/game/Level.cpp" "include/game/Camera.hpp" "src/game/Camera.cpp"  "include/game/Gamepad.hpp" "src/game/Gamepad.cpp")
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/images" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
