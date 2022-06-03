@@ -7,13 +7,12 @@
 
 #include <window/window.hpp>
 #include <game/game.hpp>
+#include <game/Gamepad.hpp>
 
 namespace game::window {
 	SDL_Window* _window;
 	SDL_Renderer* _renderer;
 	SDL_Surface* _screen;
-	SDL_Joystick* _joystick;
-	SDL_GameController* _controller;
 
 	bool _running;
 
@@ -75,8 +74,7 @@ void game::window::init_images()
 
 void game::window::init_input()
 {
-	_joystick = SDL_JoystickOpen(0);
-	_controller = SDL_GameControllerOpen(0);
+	game::pad::init();
 }
 
 SDL_Surface* game::window::get_screen()
@@ -145,7 +143,7 @@ void game::window::handle_event(const SDL_Event& event)
 		return;
 	}
 
-	game::notify_event(event);
+	game::pad::handle_event(event);
 }
 
 void game::window::handle_window_event(const SDL_Event& event)

@@ -14,6 +14,9 @@
 #include <game/Gamepad.hpp>
 
 namespace game::pad {
+	SDL_Joystick* _joystick;
+	SDL_GameController* _controller;
+
 	glm::vec2 _left_joystick_direction;
 	glm::vec2 _right_joystick_direction;
 
@@ -56,6 +59,9 @@ namespace game::pad {
 
 void game::pad::init() 
 {
+	_joystick = SDL_JoystickOpen(0);
+	_controller = SDL_GameControllerOpen(0);
+
 	_left_joystick_direction = JOYSTICK_ORIGIN;
 	_right_joystick_direction = JOYSTICK_ORIGIN;
 
@@ -107,7 +113,8 @@ bool game::pad::is_joystick_in_deadzone(Joystick joystick)
 {
 	const auto& joystick_direction = get_joystick_direction(joystick);
 
-	return joystick_direction.x < JOYSTICK_DEADZONE && joystick_direction.y < JOYSTICK_DEADZONE;
+	return glm::abs(joystick_direction.x) < JOYSTICK_DEADZONE &&
+		   glm::abs(joystick_direction.y) < JOYSTICK_DEADZONE;
 }
 
 void game::pad::handle_event(const SDL_Event& event)
@@ -121,20 +128,20 @@ void game::pad::handle_event(const SDL_Event& event)
 
 void game::pad::handle_joystick(const SDL_Event& event)
 {
-	const auto direction = static_cast<float>(event.jaxis.value) / JOYSTICK_DIRECTION_LIMIT;
+	const auto value = static_cast<float>(event.jaxis.value) / JOYSTICK_DIRECTION_LIMIT;
 
 	switch (event.jaxis.axis) {
 	case LEFT_JOYSTICK_X_AXIS:
-		_left_joystick_direction.x = direction;
+		_left_joystick_direction.x = value;
 		break;
 	case LEFT_JOYSTICK_Y_AXIS:
-		_left_joystick_direction.y = direction;
+		_left_joystick_direction.y = value;
 		break;
 	case RIGHT_JOYSTICK_X_AXIS:
-		_right_joystick_direction.x = direction;
+		_right_joystick_direction.x = value;
 		break;
 	case RIGHT_JOYSTICK_Y_AXIS:
-		_right_joystick_direction.y = direction;
+		_right_joystick_direction.y = value;
 		break;
 	}
 }

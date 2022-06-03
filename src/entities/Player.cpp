@@ -139,13 +139,13 @@ void game::Player::update()
 	const auto& direction = game::pad::get_joystick_direction(game::pad::Joystick::LEFT);
 	const auto theta_delta = game::pad::get_joystick_angle_delta(game::pad::Joystick::LEFT);
 
-	std::cout << theta_delta << "\n";
+	//std::cout << theta_delta << "\n";
 
 	if (!_changing_direction && theta_delta >= 30.0f) {
-		std::cout << "change direction: " << theta_delta << std::endl;
-		_changing_direction = true;
-		_deccelerating = true;
-		_accelerating = false;
+		//std::cout << "change direction: " << theta_delta << std::endl;
+		//_changing_direction = true;
+		//_deccelerating = true;
+		//_accelerating = false;
 	}
 
 	if (_state == PlayerState::Moving && game::pad::is_joystick_in_deadzone(game::pad::Joystick::LEFT)) {

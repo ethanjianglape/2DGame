@@ -11,7 +11,6 @@
 
 namespace game {
 	void init();
-	void notify_event(const SDL_Event& event);
 	void loop();
 }
 
