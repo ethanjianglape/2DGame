@@ -12,8 +12,6 @@
 namespace game::window {
 	void init();
 
-	SDL_Surface* get_screen();
-	SDL_PixelFormat* get_pixel_format();
 	SDL_Renderer* get_renderer();
 
 	SDL_Point get_mouse_position();

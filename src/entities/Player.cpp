@@ -11,14 +11,6 @@
 #include <entities/Player.hpp>
 #include <window/window.hpp>
 #include <game/Camera.hpp>
-#include <game/Gamepad.hpp>
-
-namespace game {
-	static constexpr auto left_axis_x = 0;
-	static constexpr auto left_axis_y = 1;
-	static constexpr auto right_axis_x = 2;
-	static constexpr auto right_axis_y = 3;
-}
 
 game::Player::Player()
 {
@@ -51,77 +43,47 @@ game::Player::Player()
 	_texture = game::make_texture("images/player.png");
 
 	game::camera::center_on_position(get_world_position_center());
+
+	game::pad::add_button_action_handler(game::pad::ButtonActionHandler{
+		.action = game::pad::ButtonAction::Pressed,
+		.handler = [this] (const game::pad::ButtonState& state) { this->button_pressed(state); }
+	});
+
+	game::pad::add_button_action_handler(game::pad::ButtonActionHandler{
+		.action = game::pad::ButtonAction::Held,
+		.handler = [this](const game::pad::ButtonState& state) { this->button_held(state); }
+	});
+
+	game::pad::add_button_action_handler(game::pad::ButtonActionHandler{
+		.action = game::pad::ButtonAction::Released,
+		.handler = [this](const game::pad::ButtonState& state) { this->button_released(state); }
+	});
 }
 
 void game::Player::init()
 {
 }
 
-void game::Player::handle_joystick(const SDL_Event& event)
+void game::Player::button_pressed(const game::pad::ButtonState& state)
 {
-	if (event.type == SDL_JOYAXISMOTION) {
-	} else if (event.type == SDL_JOYBUTTONDOWN) {
-		handle_button_down(event);
-	} else if (event.type == SDL_JOYBUTTONUP) {
-		handle_button_up(event);
-	}
+	
 }
 
-void game::Player::handle_button_down(const SDL_Event& event) 
+void game::Player::button_held(const game::pad::ButtonState& state)
 {
-	if (event.jbutton.button == 1) {
+	const auto button = state.button;
+	
+	if (button == game::pad::Button::Circle) {
 		_movement_state = MovementState::Running;
 	}
 }
 
-void game::Player::handle_button_up(const SDL_Event& event)
+void game::Player::button_released(const game::pad::ButtonState& state)
 {
-	if (event.jbutton.button == 1) {
+	const auto button = state.button;
+
+	if (button == game::pad::Button::Circle) {
 		_movement_state = MovementState::Walking;
-	}
-}
-
-void game::Player::handle_keypress(const SDL_Event& event)
-{
-	switch (event.type) {
-	case SDL_KEYDOWN:
-		handle_key_down(event);
-		break;
-	case SDL_KEYUP:
-		handle_key_up(event);
-		break;
-	}
-}
-
-void game::Player::handle_key_up(const SDL_Event& event)
-{
-	switch (event.key.keysym.sym) {
-	case SDLK_UP:
-		break;
-	case SDLK_DOWN:
-		break;
-	case SDLK_LEFT:
-		break;
-	case SDLK_RIGHT:
-		break;
-	case SDLK_SPACE:
-		break;
-	}
-}
-
-void game::Player::handle_key_down(const SDL_Event& event)
-{
-	switch (event.key.keysym.sym) {
-	case SDLK_UP:
-		break;
-	case SDLK_DOWN:
-		break;
-	case SDLK_LEFT:
-		break;
-	case SDLK_RIGHT:
-		break;
-	case SDLK_SPACE:
-		break;
 	}
 }
 
@@ -136,10 +98,10 @@ const float game::Player::get_max_speed() const noexcept
 
 void game::Player::update()
 {
-	const auto& direction = game::pad::get_joystick_direction(game::pad::Joystick::LEFT);
-	const auto theta_delta = game::pad::get_joystick_angle_delta(game::pad::Joystick::LEFT);
 
-	//std::cout << theta_delta << "\n";
+	const auto& direction = game::pad::get_joystick_direction(game::pad::Joystick::Left);
+	const auto angle = game::pad::get_joystick_angle(game::pad::Joystick::Left);
+	const auto theta_delta = game::pad::get_joystick_angle_delta(game::pad::Joystick::Left);
 
 	if (!_changing_direction && theta_delta >= 30.0f) {
 		//std::cout << "change direction: " << theta_delta << std::endl;
@@ -148,7 +110,7 @@ void game::Player::update()
 		//_accelerating = false;
 	}
 
-	if (_state == PlayerState::Moving && game::pad::is_joystick_in_deadzone(game::pad::Joystick::LEFT)) {
+	if (_state == PlayerState::Moving && game::pad::is_joystick_in_deadzone(game::pad::Joystick::Left)) {
 		_state = PlayerState::Idle;
 	} else {
 		_state = PlayerState::Moving;
@@ -220,5 +182,5 @@ void game::Player::draw() const noexcept
 {
 	const auto position = game::camera::get_relative_position(_world_position);
 
-	game::window::draw_texture(position, _width, _height, _angle + 90, _texture);
+	game::window::draw_texture(position, _width, _height, _angle, _texture);
 }

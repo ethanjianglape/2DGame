@@ -17,9 +17,6 @@ namespace game {
 
 		std::unique_ptr<game::Player> _player;
 	public:
-		void handle_keypress(const SDL_Event& event);
-		void handle_joystick(const SDL_Event& event);
-
 		void generate();
 		void update();
 		void draw() const noexcept override;

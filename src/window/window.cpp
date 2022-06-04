@@ -77,20 +77,6 @@ void game::window::init_input()
 	game::pad::init();
 }
 
-SDL_Surface* game::window::get_screen()
-{
-	if (_screen == nullptr) {
-		_screen = SDL_GetWindowSurface(_window);
-	}
-
-	return _screen;
-}
-
-SDL_PixelFormat* game::window::get_pixel_format()
-{
-	return get_screen()->format;
-}
-
 SDL_Renderer* game::window::get_renderer()
 {
 	return _renderer;

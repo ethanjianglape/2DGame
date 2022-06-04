@@ -5,6 +5,7 @@
 #include <valarray>
 #include <vector>
 #include <chrono>
+#include <map>
 
 #include <glm/vec2.hpp>
 #include <glm/geometric.hpp>
@@ -23,8 +24,9 @@ namespace game::pad {
 	glm::vec2 _initial_left_joystick_direction;
 	glm::vec2 _initial_right_joystick_direction;
 
-	//std::vector<glm::vec2> _left_joystick_directions;
-	//std::vector<glm::vec2> _right_joystick_directions;
+	std::map<Button, ButtonState> _button_state;
+
+	std::vector<ButtonActionHandler> _button_action_handlers;
 
 	float _left_joystick_angle;
 	float _left_joystick_angle_delta;
@@ -51,8 +53,14 @@ namespace game::pad {
 
 	constexpr float PI = glm::pi<float>();
 
+	void handle_button_down(const SDL_Event& event);
+	void handle_button_up(const SDL_Event& event);
 	void handle_joystick(const SDL_Event& event);
 	void set_joystick_angles();
+	void set_initial_joysticks();
+
+	void trigger_button_action_handlers();
+	void update_button_press_durations();
 
 	float calculate_angle(const glm::vec2& jostick_direction);
 }
@@ -76,15 +84,35 @@ void game::pad::init()
 	_initial_left_joystick_angle = 0.0f;
 	_initial_right_joystick_angle = 0.0f;
 
+	_button_state = std::map<Button, ButtonState>{
+		{Button::Cross, ButtonState{Button::Cross, ButtonAction::None}},
+		{Button::Circle, ButtonState{Button::Circle, ButtonAction::None}},
+		{Button::Square, ButtonState{Button::Square, ButtonAction::None}},
+		{Button::Triangle, ButtonState{Button::Triangle, ButtonAction::None}},
+		{Button::L3, ButtonState{Button::L3, ButtonAction::None}},
+		{Button::R3, ButtonState{Button::R3, ButtonAction::None}},
+		{Button::L1, ButtonState{Button::L1, ButtonAction::None}},
+		{Button::R1, ButtonState{Button::R1, ButtonAction::None}},
+		{Button::Up, ButtonState{Button::Up, ButtonAction::None}},
+		{Button::Down, ButtonState{Button::Down, ButtonAction::None}},
+		{Button::Left, ButtonState{Button::Left, ButtonAction::None}},
+		{Button::Right, ButtonState{Button::Right, ButtonAction::None}}
+	};
+
 	_previous_joystick_directions_clear = std::chrono::steady_clock::now();
+}
+
+void game::pad::add_button_action_handler(ButtonActionHandler handler)
+{
+	_button_action_handlers.push_back(handler);
 }
 
 const glm::vec2& game::pad::get_joystick_direction(Joystick joystick)
 {
 	switch (joystick) {
-	case Joystick::LEFT:
+	case Joystick::Left:
 		return _left_joystick_direction;
-	case Joystick::RIGHT:
+	case Joystick::Right:
 		return _right_joystick_direction;
 	}
 }
@@ -92,9 +120,9 @@ const glm::vec2& game::pad::get_joystick_direction(Joystick joystick)
 float game::pad::get_joystick_angle(Joystick joystick)
 {
 	switch (joystick) {
-	case Joystick::LEFT:
+	case Joystick::Left:
 		return _left_joystick_angle;
-	case Joystick::RIGHT:
+	case Joystick::Right:
 		return _right_joystick_angle;
 	}
 }
@@ -102,9 +130,9 @@ float game::pad::get_joystick_angle(Joystick joystick)
 float game::pad::get_joystick_angle_delta(Joystick joystick)
 {
 	switch (joystick) {
-	case Joystick::LEFT:
+	case Joystick::Left:
 		return _left_joystick_angle_delta;
-	case Joystick::RIGHT:
+	case Joystick::Right:
 		return _right_joystick_angle_delta;
 	}
 }
@@ -123,7 +151,31 @@ void game::pad::handle_event(const SDL_Event& event)
 	case SDL_JOYAXISMOTION:
 		handle_joystick(event);
 		break;
+	case SDL_JOYBUTTONDOWN:
+		handle_button_down(event);
+		break;
+	case SDL_JOYBUTTONUP:
+		handle_button_up(event);
+		break;
 	}
+}
+
+void game::pad::handle_button_down(const SDL_Event& event)
+{
+	const auto button = static_cast<Button>(event.jbutton.button);
+	auto& state = _button_state[button];
+
+	state.action = ButtonAction::Pressed;
+	state.press_start_time = std::chrono::steady_clock::now();
+	state.held_duration = std::chrono::milliseconds{0};
+}
+
+void game::pad::handle_button_up(const SDL_Event& event)
+{
+	const auto button = static_cast<Button>(event.jbutton.button);
+	auto& state = _button_state[button];
+
+	state.action = ButtonAction::Released;
 }
 
 void game::pad::handle_joystick(const SDL_Event& event)
@@ -149,7 +201,59 @@ void game::pad::handle_joystick(const SDL_Event& event)
 void game::pad::update()
 {
 	set_joystick_angles();
+	trigger_button_action_handlers();
+	update_button_press_durations();
+	set_initial_joysticks();
+}
 
+void game::pad::set_joystick_angles()
+{
+	_left_joystick_angle = calculate_angle(_left_joystick_direction);
+	_right_joystick_angle = calculate_angle(_right_joystick_direction);
+
+	const auto left_joystick_angle_delta1 = glm::abs(_left_joystick_angle - _initial_left_joystick_angle);
+	const auto left_joystick_angle_delta2 = glm::abs(_initial_left_joystick_angle - _left_joystick_angle);
+
+	_left_joystick_angle_delta = glm::min(left_joystick_angle_delta1, left_joystick_angle_delta2);
+	_right_joystick_angle_delta = glm::abs(_right_joystick_angle - _initial_right_joystick_angle);
+}
+
+void game::pad::trigger_button_action_handlers()
+{
+	for (const auto& [button, state] : _button_state) {
+		if (state.action == ButtonAction::None) {
+			continue;
+		}
+
+		for (const auto& handler : _button_action_handlers) {
+			if (handler.action == state.action) {
+				handler.handler(state);
+			}
+		}
+	}
+}
+
+void game::pad::update_button_press_durations()
+{
+	const auto now = std::chrono::steady_clock::now();
+
+	for (auto&& [button, state] : _button_state) {
+		if (state.action == ButtonAction::Pressed) {
+			state.action = ButtonAction::Held;
+		}
+
+		if (state.action == ButtonAction::Held) {
+			state.held_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - state.press_start_time);
+		}
+
+		if (state.action == ButtonAction::Released) {
+			state.action = ButtonAction::None;
+		}
+	}
+}
+
+void game::pad::set_initial_joysticks()
+{
 	const auto now = std::chrono::steady_clock::now();
 	const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - _previous_joystick_directions_clear);
 
@@ -162,15 +266,6 @@ void game::pad::update()
 
 		_previous_joystick_directions_clear = now;
 	}
-}
-
-void game::pad::set_joystick_angles()
-{
-	_left_joystick_angle = calculate_angle(_left_joystick_direction);
-	_right_joystick_angle = calculate_angle(_right_joystick_direction);
-
-	_left_joystick_angle_delta = glm::abs(_left_joystick_angle - _initial_left_joystick_angle);
-	_right_joystick_angle_delta = glm::abs(_right_joystick_angle - _initial_right_joystick_angle);
 }
 
 float game::pad::calculate_angle(const glm::vec2& joystick_direction)

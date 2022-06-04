@@ -28,16 +28,6 @@ void game::Level::generate()
 	_player = std::make_unique<game::Player>();
 }
 
-void game::Level::handle_keypress(const SDL_Event& event)
-{
-	_player->handle_keypress(event);
-}
-
-void game::Level::handle_joystick(const SDL_Event& event)
-{
-	_player->handle_joystick(event);
-}
-
 void game::Level::update()
 {
 	_player->update();
